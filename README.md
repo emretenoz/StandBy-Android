@@ -1,17 +1,21 @@
 # StandBy for Android
 
-A minimal Android MVP inspired by iPhone StandBy mode. While the app is open, it watches charging and orientation state. When automatic mode is enabled and the device is both charging and in landscape, it enters an immersive, AMOLED-black StandBy interface.
+A polished, native Android ambient display inspired by iPhone StandBy. While the app is open, it watches charging and orientation state. When automatic mode is enabled and the device is both charging and in landscape, it enters an immersive, AMOLED-black StandBy interface. An Android `DreamService` provides the same experience after display timeout on supported devices.
 
-The three horizontally swipeable pages show:
+The four horizontally swipeable pages show:
 
 - Two side-by-side, vertically swipeable widget stacks
-- A large digital clock
-- Clock and current date
-- Battery percentage and wired/wireless charging status
+- A customizable full-screen clock
+- An editorial calendar view
+- A visual battery and charging view
 
-Settings include automatic activation, 12/24-hour time, seconds, screen timeout behavior, and keeping the screen awake. Settings are persisted with DataStore Preferences.
+Five clock faces are included: Digital, Digital Split, Analog, Solar / Orbit, and World Clock. Long-press the full-screen clock to select a face, curated clock color, seconds, 12/24-hour time, and date visibility.
 
-The widget page follows the StandBy stack model: swipe either half vertically to change its widget, or long-press a stack to open the editor. Clock, date, battery, and charging widgets can be independently added to or removed from the left and right stacks. At least one widget is retained in each stack.
+Settings include automatic activation, screen timeout behavior, keeping the screen awake, clock appearance, manual Night Mode, and OLED burn-in protection. Settings are persisted with DataStore Preferences.
+
+The widget page follows the dual-stack model: swipe either half vertically to change its widget, or long-press a stack to open an editor directly over StandBy. Clock, date, battery, charging, and world-clock widgets can be independently added, removed, and reordered. At least one widget is retained in each stack.
+
+Night Mode keeps the OLED background fully black and changes ambient content to a dim deep red. Burn-in protection is enabled by default and moves the static content through a subtle three-pixel pattern once per minute without continuously animating it.
 
 ## Activation and Android limitations
 
@@ -36,9 +40,14 @@ While the activity is already running and StandBy is active, it requests permiss
 ```text
 app/src/main/java/com/example/standby/
 ├── MainActivity.kt                  Activity and window behavior
+├── StandByDreamService.kt           System screen saver using shared StandBy UI
 ├── data/settings/                  DataStore model and repository
 ├── system/                         Charging/orientation observers and state repository
-└── ui/                             ViewModel, screens, pager, and theme
+└── ui/
+    ├── SettingsScreen.kt            Categorized Material 3 settings
+    ├── StandByViewModel.kt          Combined observable UI state
+    ├── standby/                     Ambient pager, clock faces, widgets, editors
+    └── theme/                       Application color theme
 ```
 
 `ChargingObserver` reads the sticky `ACTION_BATTERY_CHANGED` broadcast, checks `BatteryManager.isCharging` as an OEM fallback, and continues listening for updates. `OrientationObserver` combines physical orientation-sensor readings with Android configuration callbacks. `SystemStateRepository` exposes both as `StateFlow`; `StandByViewModel` combines them with persisted settings into a single UI state.

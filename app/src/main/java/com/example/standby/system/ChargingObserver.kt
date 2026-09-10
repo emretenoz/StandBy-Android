@@ -5,12 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-enum class ChargingSource { NONE, WIRED, WIRELESS, OTHER }
+enum class ChargingSource { NONE, AC, USB, WIRELESS, OTHER, WIRED }
 
 data class ChargingState(
     val isCharging: Boolean = false,
@@ -33,8 +34,8 @@ class ChargingObserver(private val context: Context) {
                 batteryManager?.isCharging == true
             val source = when (plugged) {
                 BatteryManager.BATTERY_PLUGGED_WIRELESS -> ChargingSource.WIRELESS
-                BatteryManager.BATTERY_PLUGGED_AC,
-                BatteryManager.BATTERY_PLUGGED_USB -> ChargingSource.WIRED
+                BatteryManager.BATTERY_PLUGGED_AC -> ChargingSource.AC
+                BatteryManager.BATTERY_PLUGGED_USB -> ChargingSource.USB
                 else -> if (reportsCharging) ChargingSource.OTHER else ChargingSource.NONE
             }
             trySend(
@@ -64,7 +65,12 @@ class ChargingObserver(private val context: Context) {
             addAction(Intent.ACTION_POWER_CONNECTED)
             addAction(Intent.ACTION_POWER_DISCONNECTED)
         }
-        val initial = context.registerReceiver(receiver, filter)
+        val initial = ContextCompat.registerReceiver(
+            context,
+            receiver,
+            filter,
+            ContextCompat.RECEIVER_EXPORTED,
+        )
         sendBatteryState(initial)
         awaitClose { context.unregisterReceiver(receiver) }
     }.distinctUntilChanged()

@@ -23,8 +23,9 @@ import com.example.standby.system.ChargingObserver
 import com.example.standby.system.OrientationObserver
 import com.example.standby.system.SystemStateRepository
 import com.example.standby.ui.SettingsScreen
-import com.example.standby.ui.StandByRoot
 import com.example.standby.ui.StandByViewModel
+import com.example.standby.ui.standby.StandByActions
+import com.example.standby.ui.standby.StandByRoot
 import com.example.standby.ui.theme.StandByTheme
 import kotlinx.coroutines.delay
 
@@ -55,8 +56,16 @@ class MainActivity : ComponentActivity() {
                 )
                 StandByRoot(
                     state = state,
-                    onExitPreview = viewModel::stopPreview,
-                    onToggleWidget = viewModel::toggleWidget,
+                    actions = StandByActions(
+                        onExitPreview = if (state.isPreviewMode) viewModel::stopPreview else null,
+                        onToggleWidget = viewModel::toggleWidget,
+                        onMoveWidget = viewModel::moveWidget,
+                        onClockFaceChanged = viewModel::setClockFace,
+                        onClockColorChanged = viewModel::setClockColor,
+                        onShowSecondsChanged = viewModel::setShowSeconds,
+                        on24HourChanged = viewModel::setUse24HourClock,
+                        onShowDateChanged = viewModel::setShowDate,
+                    ),
                 ) {
                     SettingsScreen(
                         state = state,
@@ -65,6 +74,11 @@ class MainActivity : ComponentActivity() {
                         onShowSecondsChanged = viewModel::setShowSeconds,
                         onScreenTimeoutChanged = viewModel::setScreenTimeout,
                         onKeepAwakeChanged = viewModel::setKeepScreenAwake,
+                        onClockFaceChanged = viewModel::setClockFace,
+                        onClockColorChanged = viewModel::setClockColor,
+                        onShowDateChanged = viewModel::setShowDate,
+                        onNightModeChanged = viewModel::setNightMode,
+                        onBurnInProtectionChanged = viewModel::setBurnInProtection,
                         onPreview = viewModel::startPreview,
                         onOpenScreenSaverSettings = {
                             startActivity(Intent(Settings.ACTION_DREAM_SETTINGS))

@@ -19,6 +19,11 @@ class SettingsRepository(private val context: Context) {
         val keepScreenAwake = booleanPreferencesKey("keep_screen_awake")
         val leftWidgets = stringPreferencesKey("left_widgets")
         val rightWidgets = stringPreferencesKey("right_widgets")
+        val clockFace = stringPreferencesKey("clock_face")
+        val clockColor = stringPreferencesKey("clock_color")
+        val showDate = booleanPreferencesKey("show_date")
+        val nightMode = booleanPreferencesKey("night_mode")
+        val burnInProtection = booleanPreferencesKey("burn_in_protection")
     }
 
     val settings: Flow<StandBySettings> = context.settingsDataStore.data.map { preferences ->
@@ -30,6 +35,15 @@ class SettingsRepository(private val context: Context) {
                 ?.let { saved -> ScreenTimeout.entries.firstOrNull { it.name == saved } }
                 ?: ScreenTimeout.SYSTEM_DEFAULT,
             keepScreenAwake = preferences[Keys.keepScreenAwake] ?: true,
+            clockFace = preferences[Keys.clockFace]
+                ?.let { saved -> ClockFace.entries.firstOrNull { it.name == saved } }
+                ?: ClockFace.DIGITAL,
+            clockColor = preferences[Keys.clockColor]
+                ?.let { saved -> ClockColor.entries.firstOrNull { it.name == saved } }
+                ?: ClockColor.WARM_WHITE,
+            showDate = preferences[Keys.showDate] ?: true,
+            nightMode = preferences[Keys.nightMode] ?: false,
+            burnInProtection = preferences[Keys.burnInProtection] ?: true,
             leftWidgets = decodeWidgets(
                 preferences[Keys.leftWidgets],
                 listOf(StandByWidgetType.CLOCK, StandByWidgetType.BATTERY),
@@ -45,6 +59,17 @@ class SettingsRepository(private val context: Context) {
     suspend fun setUse24HourClock(enabled: Boolean) = update(Keys.use24Hour, enabled)
     suspend fun setShowSeconds(enabled: Boolean) = update(Keys.showSeconds, enabled)
     suspend fun setKeepScreenAwake(enabled: Boolean) = update(Keys.keepScreenAwake, enabled)
+    suspend fun setShowDate(enabled: Boolean) = update(Keys.showDate, enabled)
+    suspend fun setNightMode(enabled: Boolean) = update(Keys.nightMode, enabled)
+    suspend fun setBurnInProtection(enabled: Boolean) = update(Keys.burnInProtection, enabled)
+
+    suspend fun setClockFace(face: ClockFace) {
+        context.settingsDataStore.edit { it[Keys.clockFace] = face.name }
+    }
+
+    suspend fun setClockColor(color: ClockColor) {
+        context.settingsDataStore.edit { it[Keys.clockColor] = color.name }
+    }
 
     suspend fun setScreenTimeout(timeout: ScreenTimeout) {
         context.settingsDataStore.edit { it[Keys.screenTimeout] = timeout.name }
@@ -64,6 +89,22 @@ class SettingsRepository(private val context: Context) {
             } else {
                 widgets.add(widget)
             }
+            preferences[key] = widgets.joinToString(",") { it.name }
+        }
+    }
+
+    suspend fun moveWidget(column: WidgetColumn, fromIndex: Int, toIndex: Int) {
+        val key = if (column == WidgetColumn.LEFT) Keys.leftWidgets else Keys.rightWidgets
+        val defaults = if (column == WidgetColumn.LEFT) {
+            listOf(StandByWidgetType.CLOCK, StandByWidgetType.BATTERY)
+        } else {
+            listOf(StandByWidgetType.DATE, StandByWidgetType.CHARGING)
+        }
+        context.settingsDataStore.edit { preferences ->
+            val widgets = decodeWidgets(preferences[key], defaults).toMutableList()
+            if (fromIndex !in widgets.indices || toIndex !in widgets.indices) return@edit
+            val moved = widgets.removeAt(fromIndex)
+            widgets.add(toIndex, moved)
             preferences[key] = widgets.joinToString(",") { it.name }
         }
     }

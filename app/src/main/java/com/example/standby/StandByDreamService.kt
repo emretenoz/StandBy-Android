@@ -31,7 +31,8 @@ import com.example.standby.data.settings.SettingsRepository
 import com.example.standby.data.settings.StandBySettings
 import com.example.standby.system.ChargingObserver
 import com.example.standby.system.ChargingState
-import com.example.standby.ui.StandByDisplay
+import com.example.standby.ui.standby.StandByActions
+import com.example.standby.ui.standby.StandByDisplay
 import com.example.standby.ui.theme.StandByTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -81,12 +82,29 @@ class StandByDreamService : DreamService(), LifecycleOwner, ViewModelStoreOwner,
                         StandByDisplay(
                             settings = settings,
                             charging = charging,
-                            onExitPreview = null,
-                            onToggleWidget = { column: WidgetColumn, widget: StandByWidgetType ->
-                                serviceScope.launch {
-                                    settingsRepository.toggleWidget(column, widget)
-                                }
-                            },
+                            actions = StandByActions(
+                                onToggleWidget = { column: WidgetColumn, widget: StandByWidgetType ->
+                                    serviceScope.launch { settingsRepository.toggleWidget(column, widget) }
+                                },
+                                onMoveWidget = { column, from, to ->
+                                    serviceScope.launch { settingsRepository.moveWidget(column, from, to) }
+                                },
+                                onClockFaceChanged = { face ->
+                                    serviceScope.launch { settingsRepository.setClockFace(face) }
+                                },
+                                onClockColorChanged = { color ->
+                                    serviceScope.launch { settingsRepository.setClockColor(color) }
+                                },
+                                onShowSecondsChanged = { value ->
+                                    serviceScope.launch { settingsRepository.setShowSeconds(value) }
+                                },
+                                on24HourChanged = { value ->
+                                    serviceScope.launch { settingsRepository.setUse24HourClock(value) }
+                                },
+                                onShowDateChanged = { value ->
+                                    serviceScope.launch { settingsRepository.setShowDate(value) }
+                                },
+                            ),
                         )
                     } else {
                         Box(

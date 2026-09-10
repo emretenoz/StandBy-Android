@@ -3,6 +3,8 @@ package com.example.standby.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.standby.data.settings.ScreenTimeout
+import com.example.standby.data.settings.ClockColor
+import com.example.standby.data.settings.ClockFace
 import com.example.standby.data.settings.SettingsRepository
 import com.example.standby.data.settings.StandBySettings
 import com.example.standby.data.settings.StandByWidgetType
@@ -50,11 +52,18 @@ class StandByViewModel(
     fun setUse24HourClock(value: Boolean) = update { setUse24HourClock(value) }
     fun setShowSeconds(value: Boolean) = update { setShowSeconds(value) }
     fun setKeepScreenAwake(value: Boolean) = update { setKeepScreenAwake(value) }
+    fun setClockFace(value: ClockFace) = update { setClockFace(value) }
+    fun setClockColor(value: ClockColor) = update { setClockColor(value) }
+    fun setShowDate(value: Boolean) = update { setShowDate(value) }
+    fun setNightMode(value: Boolean) = update { setNightMode(value) }
+    fun setBurnInProtection(value: Boolean) = update { setBurnInProtection(value) }
     fun setScreenTimeout(value: ScreenTimeout) = update { setScreenTimeout(value) }
     fun startPreview() { previewMode.value = true }
     fun stopPreview() { previewMode.value = false }
     fun toggleWidget(column: WidgetColumn, widget: StandByWidgetType) =
         update { toggleWidget(column, widget) }
+    fun moveWidget(column: WidgetColumn, fromIndex: Int, toIndex: Int) =
+        update { moveWidget(column, fromIndex, toIndex) }
 
     private fun update(block: suspend SettingsRepository.() -> Unit) {
         viewModelScope.launch { settingsRepository.block() }
