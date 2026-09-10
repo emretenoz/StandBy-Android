@@ -33,7 +33,13 @@ import androidx.compose.ui.unit.sp
 import com.example.standby.BuildConfig
 import com.example.standby.data.settings.ClockColor
 import com.example.standby.data.settings.ClockFace
+import com.example.standby.data.settings.BackgroundStyle
+import com.example.standby.data.settings.BatteryWidgetStyle
+import com.example.standby.data.settings.ClockWidgetStyle
+import com.example.standby.data.settings.DateWidgetStyle
 import com.example.standby.data.settings.ScreenTimeout
+import com.example.standby.data.settings.StandByThemeId
+import com.example.standby.data.settings.TypographyStyle
 import com.example.standby.system.ChargingSource
 
 @Composable
@@ -49,6 +55,13 @@ fun SettingsScreen(
     onShowDateChanged: (Boolean) -> Unit,
     onNightModeChanged: (Boolean) -> Unit,
     onBurnInProtectionChanged: (Boolean) -> Unit,
+    onDayThemeChanged: (StandByThemeId) -> Unit,
+    onNightThemeChanged: (StandByThemeId) -> Unit,
+    onBackgroundStyleChanged: (BackgroundStyle) -> Unit,
+    onTypographyStyleChanged: (TypographyStyle) -> Unit,
+    onClockWidgetStyleChanged: (ClockWidgetStyle) -> Unit,
+    onDateWidgetStyleChanged: (DateWidgetStyle) -> Unit,
+    onBatteryWidgetStyleChanged: (BatteryWidgetStyle) -> Unit,
     onPreview: () -> Unit,
     onOpenScreenSaverSettings: () -> Unit,
 ) {
@@ -93,6 +106,13 @@ fun SettingsScreen(
             )
 
             SettingsSection("APPEARANCE")
+            ChoiceSetting("Day theme", state.settings.dayTheme.label,
+                choices = StandByThemeId.entries, label = { it.label }, onSelected = onDayThemeChanged)
+            ChoiceSetting("Night theme", state.settings.nightTheme.label,
+                choices = StandByThemeId.entries.filterNot { it == StandByThemeId.MONO_LIGHT },
+                label = { it.label }, onSelected = onNightThemeChanged)
+            ChoiceSetting("Background", state.settings.backgroundStyle.label,
+                choices = BackgroundStyle.entries, label = { it.label }, onSelected = onBackgroundStyleChanged)
             ChoiceSetting("Clock face", state.settings.clockFace.label,
                 choices = ClockFace.entries, label = { it.label }, onSelected = onClockFaceChanged)
             ChoiceSetting("Clock color", state.settings.clockColor.label,
@@ -100,6 +120,8 @@ fun SettingsScreen(
             SettingSwitch("24-hour time", null, state.settings.use24HourClock, on24HourChanged)
             SettingSwitch("Show seconds", null, state.settings.showSeconds, onShowSecondsChanged)
             SettingSwitch("Show date", null, state.settings.showDate, onShowDateChanged)
+            ChoiceSetting("Typography", state.settings.typographyStyle.label,
+                choices = TypographyStyle.entries, label = { it.label }, onSelected = onTypographyStyleChanged)
             SettingSwitch(
                 "Night Mode",
                 "Uses dim red content on a true-black background.",
@@ -116,6 +138,12 @@ fun SettingsScreen(
             SettingsSection("WIDGETS")
             InfoRow("Left stack", state.settings.leftWidgets.joinToString { it.label })
             InfoRow("Right stack", state.settings.rightWidgets.joinToString { it.label })
+            ChoiceSetting("Clock widget style", state.settings.clockWidgetStyle.label,
+                choices = ClockWidgetStyle.entries, label = { it.label }, onSelected = onClockWidgetStyleChanged)
+            ChoiceSetting("Date widget style", state.settings.dateWidgetStyle.label,
+                choices = DateWidgetStyle.entries, label = { it.label }, onSelected = onDateWidgetStyleChanged)
+            ChoiceSetting("Battery widget style", state.settings.batteryWidgetStyle.label,
+                choices = BatteryWidgetStyle.entries, label = { it.label }, onSelected = onBatteryWidgetStyleChanged)
             Text(
                 "Long-press either stack in StandBy to add, remove, or reorder widgets.",
                 modifier = Modifier.padding(top = 10.dp),

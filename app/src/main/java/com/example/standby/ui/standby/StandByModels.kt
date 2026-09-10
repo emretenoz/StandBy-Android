@@ -11,14 +11,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.example.standby.data.settings.ClockColor
 import com.example.standby.data.settings.ClockFace
+import com.example.standby.data.settings.BackgroundStyle
+import com.example.standby.data.settings.BatteryWidgetStyle
+import com.example.standby.data.settings.ClockColor
+import com.example.standby.data.settings.ClockWidgetStyle
+import com.example.standby.data.settings.DateWidgetStyle
 import com.example.standby.data.settings.StandBySettings
+import com.example.standby.data.settings.StandByThemeId
 import com.example.standby.data.settings.StandByWidgetType
+import com.example.standby.data.settings.TypographyStyle
 import com.example.standby.data.settings.WidgetColumn
 import java.time.LocalDateTime
 import kotlinx.coroutines.delay
@@ -32,15 +37,14 @@ data class StandByActions(
     val onShowSecondsChanged: ((Boolean) -> Unit)? = null,
     val on24HourChanged: ((Boolean) -> Unit)? = null,
     val onShowDateChanged: ((Boolean) -> Unit)? = null,
-)
-
-fun StandBySettings.accentColor(): Color {
-    if (nightMode) return Color(0xFF7A1515)
-    return Color(clockColor.argb)
-}
-
-fun StandBySettings.secondaryColor(): Color = accentColor().copy(
-    alpha = if (nightMode) 0.52f else 0.62f,
+    val onDayThemeChanged: ((StandByThemeId) -> Unit)? = null,
+    val onNightThemeChanged: ((StandByThemeId) -> Unit)? = null,
+    val onBackgroundStyleChanged: ((BackgroundStyle) -> Unit)? = null,
+    val onTypographyStyleChanged: ((TypographyStyle) -> Unit)? = null,
+    val onCustomColorsChanged: ((Long, Long, Long, Long) -> Unit)? = null,
+    val onClockWidgetStyleChanged: ((ClockWidgetStyle) -> Unit)? = null,
+    val onDateWidgetStyleChanged: ((DateWidgetStyle) -> Unit)? = null,
+    val onBatteryWidgetStyleChanged: ((BatteryWidgetStyle) -> Unit)? = null,
 )
 
 @Composable

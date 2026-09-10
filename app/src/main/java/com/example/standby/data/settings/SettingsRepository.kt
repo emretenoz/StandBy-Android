@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -24,6 +25,17 @@ class SettingsRepository(private val context: Context) {
         val showDate = booleanPreferencesKey("show_date")
         val nightMode = booleanPreferencesKey("night_mode")
         val burnInProtection = booleanPreferencesKey("burn_in_protection")
+        val dayTheme = stringPreferencesKey("day_theme")
+        val nightTheme = stringPreferencesKey("night_theme")
+        val backgroundStyle = stringPreferencesKey("background_style")
+        val typographyStyle = stringPreferencesKey("typography_style")
+        val customBackground = longPreferencesKey("custom_background")
+        val customPrimary = longPreferencesKey("custom_primary")
+        val customSecondary = longPreferencesKey("custom_secondary")
+        val customAccent = longPreferencesKey("custom_accent")
+        val clockWidgetStyle = stringPreferencesKey("clock_widget_style")
+        val dateWidgetStyle = stringPreferencesKey("date_widget_style")
+        val batteryWidgetStyle = stringPreferencesKey("battery_widget_style")
     }
 
     val settings: Flow<StandBySettings> = context.settingsDataStore.data.map { preferences ->
@@ -40,10 +52,21 @@ class SettingsRepository(private val context: Context) {
                 ?: ClockFace.DIGITAL,
             clockColor = preferences[Keys.clockColor]
                 ?.let { saved -> ClockColor.entries.firstOrNull { it.name == saved } }
-                ?: ClockColor.WARM_WHITE,
+                ?: ClockColor.INHERIT,
             showDate = preferences[Keys.showDate] ?: true,
             nightMode = preferences[Keys.nightMode] ?: false,
             burnInProtection = preferences[Keys.burnInProtection] ?: true,
+            dayTheme = enumValue(preferences[Keys.dayTheme], StandByThemeId.CLASSIC),
+            nightTheme = enumValue(preferences[Keys.nightTheme], StandByThemeId.CRIMSON_NIGHT),
+            backgroundStyle = enumValue(preferences[Keys.backgroundStyle], BackgroundStyle.SOLID),
+            typographyStyle = enumValue(preferences[Keys.typographyStyle], TypographyStyle.AUTO),
+            customBackground = preferences[Keys.customBackground] ?: 0xFF000000,
+            customPrimary = preferences[Keys.customPrimary] ?: 0xFFF1EDE3,
+            customSecondary = preferences[Keys.customSecondary] ?: 0xFF9D9990,
+            customAccent = preferences[Keys.customAccent] ?: 0xFFFF9F0A,
+            clockWidgetStyle = enumValue(preferences[Keys.clockWidgetStyle], ClockWidgetStyle.MINIMAL),
+            dateWidgetStyle = enumValue(preferences[Keys.dateWidgetStyle], DateWidgetStyle.EDITORIAL),
+            batteryWidgetStyle = enumValue(preferences[Keys.batteryWidgetStyle], BatteryWidgetStyle.CIRCULAR),
             leftWidgets = decodeWidgets(
                 preferences[Keys.leftWidgets],
                 listOf(StandByWidgetType.CLOCK, StandByWidgetType.BATTERY),
@@ -69,6 +92,23 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setClockColor(color: ClockColor) {
         context.settingsDataStore.edit { it[Keys.clockColor] = color.name }
+    }
+
+    suspend fun setDayTheme(theme: StandByThemeId) = setEnum(Keys.dayTheme, theme)
+    suspend fun setNightTheme(theme: StandByThemeId) = setEnum(Keys.nightTheme, theme)
+    suspend fun setBackgroundStyle(style: BackgroundStyle) = setEnum(Keys.backgroundStyle, style)
+    suspend fun setTypographyStyle(style: TypographyStyle) = setEnum(Keys.typographyStyle, style)
+    suspend fun setClockWidgetStyle(style: ClockWidgetStyle) = setEnum(Keys.clockWidgetStyle, style)
+    suspend fun setDateWidgetStyle(style: DateWidgetStyle) = setEnum(Keys.dateWidgetStyle, style)
+    suspend fun setBatteryWidgetStyle(style: BatteryWidgetStyle) = setEnum(Keys.batteryWidgetStyle, style)
+
+    suspend fun setCustomColors(background: Long, primary: Long, secondary: Long, accent: Long) {
+        context.settingsDataStore.edit {
+            it[Keys.customBackground] = background
+            it[Keys.customPrimary] = primary
+            it[Keys.customSecondary] = secondary
+            it[Keys.customAccent] = accent
+        }
     }
 
     suspend fun setScreenTimeout(timeout: ScreenTimeout) {
@@ -124,5 +164,12 @@ class SettingsRepository(private val context: Context) {
             ?.distinct()
             .orEmpty()
         return decoded.ifEmpty { defaults }
+    }
+
+    private inline fun <reified T : Enum<T>> enumValue(saved: String?, fallback: T): T =
+        saved?.let { name -> enumValues<T>().firstOrNull { it.name == name } } ?: fallback
+
+    private suspend fun setEnum(key: androidx.datastore.preferences.core.Preferences.Key<String>, value: Enum<*>) {
+        context.settingsDataStore.edit { it[key] = value.name }
     }
 }

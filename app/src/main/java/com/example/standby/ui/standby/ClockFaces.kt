@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -75,16 +76,20 @@ fun ClockFaceContent(settings: StandBySettings, modifier: Modifier = Modifier) {
 @Composable
 private fun DigitalClockFace(settings: StandBySettings, modifier: Modifier) {
     val now = rememberStandByTime(settings.showSeconds)
+    val theme = LocalStandByTheme.current
+    val typography = resolveTypography(settings, ClockFace.DIGITAL)
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val size = min(maxHeight.value * 0.48f, maxWidth.value * 0.205f).sp
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = formatTime(now, settings),
                 modifier = Modifier.fillMaxWidth(),
-                color = settings.accentColor(),
+                color = theme.clockPrimary,
                 fontSize = size,
                 lineHeight = size,
-                fontWeight = FontWeight.Thin,
+                fontWeight = typography.weight,
+                fontFamily = typography.family,
+                letterSpacing = typography.letterSpacing,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 style = tabularStyle,
@@ -97,6 +102,8 @@ private fun DigitalClockFace(settings: StandBySettings, modifier: Modifier) {
 @Composable
 private fun SplitClockFace(settings: StandBySettings, modifier: Modifier) {
     val now = rememberStandByTime(settings.showSeconds)
+    val theme = LocalStandByTheme.current
+    val typography = resolveTypography(settings, ClockFace.DIGITAL_SPLIT)
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val size = min(maxHeight.value * 0.54f, maxWidth.value * 0.22f).sp
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -107,19 +114,25 @@ private fun SplitClockFace(settings: StandBySettings, modifier: Modifier) {
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                SplitNumber(formatHour(now, settings), size.value.toInt(), settings)
+                SplitNumber(formatHour(now, settings), size.value.toInt(), settings, theme.clockPrimary)
                 Text(
                     text = "·",
-                    color = settings.secondaryColor(),
+                    color = theme.clockSecondary,
                     fontSize = (size.value * 0.7f).sp,
                     fontWeight = FontWeight.Thin,
                 )
-                SplitNumber(now.format(DateTimeFormatter.ofPattern("mm")), size.value.toInt(), settings)
+                SplitNumber(
+                    now.format(DateTimeFormatter.ofPattern("mm")),
+                    size.value.toInt(),
+                    settings,
+                    theme.clockSecondary,
+                )
                 if (settings.showSeconds) {
                     Text(
                         text = now.format(DateTimeFormatter.ofPattern("ss")),
-                        color = settings.secondaryColor(),
+                        color = theme.clockSecondary,
                         fontSize = (size.value * 0.32f).sp,
+                        fontFamily = typography.family,
                         style = tabularStyle,
                     )
                 }
@@ -130,13 +143,22 @@ private fun SplitClockFace(settings: StandBySettings, modifier: Modifier) {
 }
 
 @Composable
-private fun SplitNumber(value: String, size: Int, settings: StandBySettings) {
+private fun SplitNumber(
+    value: String,
+    size: Int,
+    settings: StandBySettings,
+    color: androidx.compose.ui.graphics.Color,
+) {
+    val typography = resolveTypography(settings, ClockFace.DIGITAL_SPLIT)
     Text(
         text = value,
-        color = settings.accentColor(),
+        modifier = Modifier.graphicsLayer(scaleX = typography.horizontalScale),
+        color = color,
         fontSize = size.sp,
         lineHeight = size.sp,
-        fontWeight = FontWeight.Light,
+        fontWeight = typography.weight,
+        fontFamily = typography.family,
+        letterSpacing = typography.letterSpacing,
         style = tabularStyle,
     )
 }
@@ -144,8 +166,9 @@ private fun SplitNumber(value: String, size: Int, settings: StandBySettings) {
 @Composable
 private fun AnalogClockFace(settings: StandBySettings, modifier: Modifier) {
     val now = rememberStandByTime(settings.showSeconds, smooth = settings.showSeconds)
-    val accent = settings.accentColor()
-    val secondary = settings.secondaryColor()
+    val theme = LocalStandByTheme.current
+    val accent = theme.clockPrimary
+    val secondary = theme.analogMarkers
     Row(
         modifier = modifier.padding(horizontal = 30.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -170,7 +193,7 @@ private fun AnalogClockFace(settings: StandBySettings, modifier: Modifier) {
             drawHand(center, radius * 0.48f, hour * 30f, accent, 7.dp.toPx())
             drawHand(center, radius * 0.72f, minute * 6f, accent, 4.dp.toPx())
             if (settings.showSeconds) {
-                drawHand(center, radius * 0.82f, second * 6f, secondary, 1.5.dp.toPx())
+                drawHand(center, radius * 0.82f, second * 6f, theme.analogSecondHand, 1.5.dp.toPx())
             }
             drawCircle(accent, 5.dp.toPx(), center)
         }
@@ -216,8 +239,9 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawHand(
 @Composable
 private fun OrbitClockFace(settings: StandBySettings, modifier: Modifier) {
     val now = rememberStandByTime(settings.showSeconds, smooth = settings.showSeconds)
-    val accent = settings.accentColor()
-    val secondary = settings.secondaryColor()
+    val theme = LocalStandByTheme.current
+    val accent = theme.accent
+    val secondary = theme.clockSecondary
     Row(
         modifier = modifier.padding(horizontal = 36.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -275,20 +299,24 @@ private fun WorldTimeBlock(
     settings: StandBySettings,
     alignment: Alignment.Horizontal,
 ) {
+    val theme = LocalStandByTheme.current
+    val typography = resolveTypography(settings, ClockFace.WORLD)
     Column(horizontalAlignment = alignment) {
-        Text(city, color = settings.secondaryColor(), fontSize = 13.sp, letterSpacing = 2.sp)
+        Text(city, color = theme.secondary, fontSize = 13.sp, letterSpacing = 2.sp)
         Text(
             formatTime(time, settings),
-            color = settings.accentColor(),
+            color = theme.clockPrimary,
             fontSize = 74.sp,
             lineHeight = 78.sp,
             fontWeight = FontWeight.Thin,
+            fontFamily = typography.family,
+            letterSpacing = typography.letterSpacing,
             style = tabularStyle,
         )
         if (settings.showDate) {
             Text(
                 time.format(DateTimeFormatter.ofPattern("EEE, MMM d", Locale.getDefault())),
-                color = settings.secondaryColor(),
+                color = theme.secondary,
                 fontSize = 17.sp,
             )
         }
@@ -302,10 +330,12 @@ private fun ClockDate(
     alignment: Alignment.Horizontal = Alignment.CenterHorizontally,
 ) {
     if (!settings.showDate) return
+    val theme = LocalStandByTheme.current
     Spacer(Modifier.height(8.dp))
     Text(
         text = time.format(DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault())),
-        color = settings.secondaryColor(),
+        color = theme.clockSecondary,
+        fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
         fontSize = 20.sp,
         fontWeight = FontWeight.Light,
         textAlign = if (alignment == Alignment.End) TextAlign.End else TextAlign.Start,

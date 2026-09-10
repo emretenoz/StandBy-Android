@@ -104,6 +104,32 @@ class StandByDreamService : DreamService(), LifecycleOwner, ViewModelStoreOwner,
                                 onShowDateChanged = { value ->
                                     serviceScope.launch { settingsRepository.setShowDate(value) }
                                 },
+                                onDayThemeChanged = { value ->
+                                    serviceScope.launch { settingsRepository.setDayTheme(value) }
+                                },
+                                onNightThemeChanged = { value ->
+                                    serviceScope.launch { settingsRepository.setNightTheme(value) }
+                                },
+                                onBackgroundStyleChanged = { value ->
+                                    serviceScope.launch { settingsRepository.setBackgroundStyle(value) }
+                                },
+                                onTypographyStyleChanged = { value ->
+                                    serviceScope.launch { settingsRepository.setTypographyStyle(value) }
+                                },
+                                onCustomColorsChanged = { background, primary, secondary, accent ->
+                                    serviceScope.launch {
+                                        settingsRepository.setCustomColors(background, primary, secondary, accent)
+                                    }
+                                },
+                                onClockWidgetStyleChanged = { value ->
+                                    serviceScope.launch { settingsRepository.setClockWidgetStyle(value) }
+                                },
+                                onDateWidgetStyleChanged = { value ->
+                                    serviceScope.launch { settingsRepository.setDateWidgetStyle(value) }
+                                },
+                                onBatteryWidgetStyleChanged = { value ->
+                                    serviceScope.launch { settingsRepository.setBatteryWidgetStyle(value) }
+                                },
                             ),
                         )
                     } else {

@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.standby.data.settings.StandBySettings
@@ -67,10 +65,28 @@ fun StandByDisplay(
     charging: ChargingState,
     actions: StandByActions = StandByActions(),
 ) {
+    StandByThemeProvider(settings) {
+        ThemedBackground(
+            settings = settings,
+            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+        ) {
+            StandByDisplayContent(settings, charging, actions)
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun StandByDisplayContent(
+    settings: StandBySettings,
+    charging: ChargingState,
+    actions: StandByActions,
+) {
     val pagerState = rememberPagerState(pageCount = { 4 })
     var editingStack by remember { mutableStateOf<WidgetColumn?>(null) }
     var editingClock by remember { mutableStateOf(false) }
     var indicatorVisible by remember { mutableStateOf(false) }
+    val theme = LocalStandByTheme.current
 
     LaunchedEffect(pagerState.isScrollInProgress, pagerState.currentPage) {
         indicatorVisible = true
@@ -80,12 +96,7 @@ fun StandByDisplay(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .windowInsetsPadding(WindowInsets.safeDrawing),
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         BurnInContainer(settings.burnInProtection && editingStack == null && !editingClock) {
             HorizontalPager(
                 state = pagerState,
@@ -95,7 +106,7 @@ fun StandByDisplay(
                 when (page) {
                     0 -> DualWidgetPage(settings, charging) { editingStack = it }
                     1 -> FullClockPage(settings) { editingClock = true }
-                    2 -> CalendarPage(settings)
+                    2 -> CalendarPage()
                     else -> BatteryPage(settings, charging)
                 }
             }
@@ -115,7 +126,7 @@ fun StandByDisplay(
                         Modifier
                             .size(if (index == pagerState.currentPage) 6.dp else 4.dp)
                             .alpha(if (index == pagerState.currentPage) 0.7f else 0.24f)
-                            .background(settings.accentColor(), CircleShape)
+                            .background(theme.accent, CircleShape)
                     )
                 }
             }
@@ -128,7 +139,7 @@ fun StandByDisplay(
                     .align(Alignment.TopEnd)
                     .clickable(onClick = exit)
                     .padding(14.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+                color = theme.secondary.copy(alpha = 0.55f),
                 fontSize = 26.sp,
             )
         }
@@ -144,6 +155,9 @@ fun StandByDisplay(
                     settings = settings,
                     onToggleWidget = actions.onToggleWidget ?: { _, _ -> },
                     onMoveWidget = actions.onMoveWidget ?: { _, _, _ -> },
+                    onClockStyleChanged = actions.onClockWidgetStyleChanged ?: {},
+                    onDateStyleChanged = actions.onDateWidgetStyleChanged ?: {},
+                    onBatteryStyleChanged = actions.onBatteryWidgetStyleChanged ?: {},
                     onSelectColumn = { editingStack = it },
                     onDone = { editingStack = null },
                 )

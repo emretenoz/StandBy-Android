@@ -65,6 +65,14 @@ class MainActivity : ComponentActivity() {
                         onShowSecondsChanged = viewModel::setShowSeconds,
                         on24HourChanged = viewModel::setUse24HourClock,
                         onShowDateChanged = viewModel::setShowDate,
+                        onDayThemeChanged = viewModel::setDayTheme,
+                        onNightThemeChanged = viewModel::setNightTheme,
+                        onBackgroundStyleChanged = viewModel::setBackgroundStyle,
+                        onTypographyStyleChanged = viewModel::setTypographyStyle,
+                        onCustomColorsChanged = viewModel::setCustomColors,
+                        onClockWidgetStyleChanged = viewModel::setClockWidgetStyle,
+                        onDateWidgetStyleChanged = viewModel::setDateWidgetStyle,
+                        onBatteryWidgetStyleChanged = viewModel::setBatteryWidgetStyle,
                     ),
                 ) {
                     SettingsScreen(
@@ -79,6 +87,13 @@ class MainActivity : ComponentActivity() {
                         onShowDateChanged = viewModel::setShowDate,
                         onNightModeChanged = viewModel::setNightMode,
                         onBurnInProtectionChanged = viewModel::setBurnInProtection,
+                        onDayThemeChanged = viewModel::setDayTheme,
+                        onNightThemeChanged = viewModel::setNightTheme,
+                        onBackgroundStyleChanged = viewModel::setBackgroundStyle,
+                        onTypographyStyleChanged = viewModel::setTypographyStyle,
+                        onClockWidgetStyleChanged = viewModel::setClockWidgetStyle,
+                        onDateWidgetStyleChanged = viewModel::setDateWidgetStyle,
+                        onBatteryWidgetStyleChanged = viewModel::setBatteryWidgetStyle,
                         onPreview = viewModel::startPreview,
                         onOpenScreenSaverSettings = {
                             startActivity(Intent(Settings.ACTION_DREAM_SETTINGS))

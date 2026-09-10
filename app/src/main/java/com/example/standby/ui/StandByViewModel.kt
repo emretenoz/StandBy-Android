@@ -5,6 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.standby.data.settings.ScreenTimeout
 import com.example.standby.data.settings.ClockColor
 import com.example.standby.data.settings.ClockFace
+import com.example.standby.data.settings.BackgroundStyle
+import com.example.standby.data.settings.BatteryWidgetStyle
+import com.example.standby.data.settings.ClockWidgetStyle
+import com.example.standby.data.settings.DateWidgetStyle
+import com.example.standby.data.settings.StandByThemeId
+import com.example.standby.data.settings.TypographyStyle
 import com.example.standby.data.settings.SettingsRepository
 import com.example.standby.data.settings.StandBySettings
 import com.example.standby.data.settings.StandByWidgetType
@@ -57,6 +63,15 @@ class StandByViewModel(
     fun setShowDate(value: Boolean) = update { setShowDate(value) }
     fun setNightMode(value: Boolean) = update { setNightMode(value) }
     fun setBurnInProtection(value: Boolean) = update { setBurnInProtection(value) }
+    fun setDayTheme(value: StandByThemeId) = update { setDayTheme(value) }
+    fun setNightTheme(value: StandByThemeId) = update { setNightTheme(value) }
+    fun setBackgroundStyle(value: BackgroundStyle) = update { setBackgroundStyle(value) }
+    fun setTypographyStyle(value: TypographyStyle) = update { setTypographyStyle(value) }
+    fun setClockWidgetStyle(value: ClockWidgetStyle) = update { setClockWidgetStyle(value) }
+    fun setDateWidgetStyle(value: DateWidgetStyle) = update { setDateWidgetStyle(value) }
+    fun setBatteryWidgetStyle(value: BatteryWidgetStyle) = update { setBatteryWidgetStyle(value) }
+    fun setCustomColors(background: Long, primary: Long, secondary: Long, accent: Long) =
+        update { setCustomColors(background, primary, secondary, accent) }
     fun setScreenTimeout(value: ScreenTimeout) = update { setScreenTimeout(value) }
     fun startPreview() { previewMode.value = true }
     fun stopPreview() { previewMode.value = false }

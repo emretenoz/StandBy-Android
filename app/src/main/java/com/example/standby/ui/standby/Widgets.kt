@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,24 +17,30 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.standby.data.settings.BatteryWidgetStyle
+import com.example.standby.data.settings.DateWidgetStyle
 import com.example.standby.data.settings.StandBySettings
 import com.example.standby.data.settings.StandByWidgetType
 import com.example.standby.data.settings.WidgetColumn
@@ -86,6 +93,7 @@ private fun WidgetStack(
 ) {
     val pagerState = rememberPagerState(pageCount = { widgets.size })
     val haptics = LocalHapticFeedback.current
+    val theme = LocalStandByTheme.current
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -118,7 +126,7 @@ private fun WidgetStack(
                             .then(Modifier)
                     ) {
                         Canvas(Modifier.fillMaxSize()) {
-                            drawCircle(settings.accentColor())
+                            drawCircle(theme.accent)
                         }
                     }
                 }
@@ -137,7 +145,7 @@ fun WidgetContent(
         StandByWidgetType.CLOCK -> CompactClockWidget(settings)
         StandByWidgetType.DATE -> CompactDateWidget(settings)
         StandByWidgetType.BATTERY -> CompactBatteryWidget(settings, charging)
-        StandByWidgetType.CHARGING -> CompactChargingWidget(settings, charging)
+        StandByWidgetType.CHARGING -> CompactChargingWidget(charging)
         StandByWidgetType.WORLD_CLOCK -> CompactWorldClockWidget(settings)
     }
 }
@@ -145,6 +153,8 @@ fun WidgetContent(
 @Composable
 private fun CompactClockWidget(settings: StandBySettings) {
     val now = rememberStandByTime(settings.showSeconds)
+    val theme = LocalStandByTheme.current
+    val typography = resolveTypography(settings, com.example.standby.data.settings.ClockFace.DIGITAL)
     val pattern = when {
         settings.use24HourClock && settings.showSeconds -> "HH:mm:ss"
         settings.use24HourClock -> "HH:mm"
@@ -157,10 +167,18 @@ private fun CompactClockWidget(settings: StandBySettings) {
             Text(
                 text = now.format(DateTimeFormatter.ofPattern(pattern)),
                 modifier = Modifier.fillMaxWidth(),
-                color = settings.accentColor(),
+                color = theme.clockPrimary,
                 fontSize = size,
                 lineHeight = size,
-                fontWeight = FontWeight.Thin,
+                fontWeight = when (settings.clockWidgetStyle) {
+                    com.example.standby.data.settings.ClockWidgetStyle.BOLD -> FontWeight.Bold
+                    else -> typography.weight
+                },
+                fontFamily = when (settings.clockWidgetStyle) {
+                    com.example.standby.data.settings.ClockWidgetStyle.EDITORIAL -> FontFamily.Serif
+                    com.example.standby.data.settings.ClockWidgetStyle.COMPACT -> FontFamily.Monospace
+                    else -> typography.family
+                },
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 style = TextStyle(fontFeatureSettings = "tnum"),
@@ -168,7 +186,7 @@ private fun CompactClockWidget(settings: StandBySettings) {
             if (!settings.use24HourClock) {
                 Text(
                     text = now.format(DateTimeFormatter.ofPattern("a")),
-                    color = settings.secondaryColor(),
+                    color = theme.clockSecondary,
                     fontSize = 12.sp,
                     letterSpacing = 2.sp,
                 )
@@ -180,30 +198,81 @@ private fun CompactClockWidget(settings: StandBySettings) {
 @Composable
 private fun CompactDateWidget(settings: StandBySettings) {
     val now = rememberStandByTime(showSeconds = false)
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = now.format(DateTimeFormatter.ofPattern("EEEE", Locale.getDefault())).uppercase(),
-            color = settings.secondaryColor(),
-            fontSize = 13.sp,
-            letterSpacing = 2.5.sp,
-        )
-        Text(
-            text = now.dayOfMonth.toString(),
-            color = settings.accentColor(),
-            fontSize = 88.sp,
-            lineHeight = 88.sp,
-            fontWeight = FontWeight.Thin,
-        )
-        Text(
-            text = now.format(DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())).uppercase(),
-            color = settings.secondaryColor(),
-            fontSize = 15.sp,
-            letterSpacing = 2.sp,
-        )
+    val theme = LocalStandByTheme.current
+    when (settings.dateWidgetStyle) {
+        DateWidgetStyle.NUMERIC -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = now.format(DateTimeFormatter.ofPattern("dd.MM")),
+                color = theme.primary,
+                fontSize = 66.sp,
+                fontWeight = FontWeight.Medium,
+                style = TextStyle(fontFeatureSettings = "tnum"),
+            )
+        }
+        DateWidgetStyle.CALENDAR -> Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = now.format(DateTimeFormatter.ofPattern("EEE", Locale.getDefault())).uppercase(),
+                color = theme.accent,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 3.sp,
+            )
+            Text(
+                text = now.dayOfMonth.toString(),
+                color = theme.primary,
+                fontSize = 94.sp,
+                lineHeight = 92.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        DateWidgetStyle.MINIMAL -> Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = now.format(DateTimeFormatter.ofPattern("EEEE", Locale.getDefault())),
+                color = theme.primary,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Light,
+            )
+            Text(
+                text = now.format(DateTimeFormatter.ofPattern("d MMMM", Locale.getDefault())),
+                color = theme.secondary,
+                fontSize = 17.sp,
+                letterSpacing = 1.sp,
+            )
+        }
+        DateWidgetStyle.EDITORIAL -> Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = now.format(DateTimeFormatter.ofPattern("EEEE", Locale.getDefault())).uppercase(),
+                color = theme.secondary,
+                fontSize = 13.sp,
+                letterSpacing = 2.5.sp,
+            )
+            Text(
+                text = now.dayOfMonth.toString(),
+                color = theme.primary,
+                fontSize = 88.sp,
+                lineHeight = 88.sp,
+                fontWeight = FontWeight.Thin,
+                fontFamily = FontFamily.Serif,
+            )
+            Text(
+                text = now.format(DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())).uppercase(),
+                color = theme.secondary,
+                fontSize = 15.sp,
+                letterSpacing = 2.sp,
+            )
+        }
     }
 }
 
@@ -218,17 +287,18 @@ private fun CompactBatteryWidget(settings: StandBySettings, charging: ChargingSt
 }
 
 @Composable
-private fun CompactChargingWidget(settings: StandBySettings, charging: ChargingState) {
+private fun CompactChargingWidget(charging: ChargingState) {
+    val theme = LocalStandByTheme.current
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        ChargingGlyph(settings, charging, 74)
+        ChargingGlyph(charging, 74)
         Spacer(Modifier.height(14.dp))
         Text(
             text = chargingLabel(charging).uppercase(Locale.getDefault()),
-            color = settings.secondaryColor(),
+            color = theme.secondary,
             fontSize = 13.sp,
             letterSpacing = 2.sp,
         )
@@ -239,16 +309,17 @@ private fun CompactChargingWidget(settings: StandBySettings, charging: ChargingS
 private fun CompactWorldClockWidget(settings: StandBySettings) {
     val local = rememberStandByTime(settings.showSeconds)
     val utc = local.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime()
+    val theme = LocalStandByTheme.current
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 22.dp),
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("UTC", color = settings.secondaryColor(), fontSize = 12.sp, letterSpacing = 2.sp)
+        Text("UTC", color = theme.secondary, fontSize = 12.sp, letterSpacing = 2.sp)
         Text(
             utc.format(DateTimeFormatter.ofPattern(if (settings.use24HourClock) "HH:mm" else "h:mm")),
-            color = settings.accentColor(),
+            color = theme.clockPrimary,
             fontSize = 62.sp,
             lineHeight = 66.sp,
             fontWeight = FontWeight.Thin,
@@ -256,15 +327,16 @@ private fun CompactWorldClockWidget(settings: StandBySettings) {
         )
         Text(
             utc.format(DateTimeFormatter.ofPattern("EEE, MMM d", Locale.getDefault())),
-            color = settings.secondaryColor(),
+            color = theme.secondary,
             fontSize = 15.sp,
         )
     }
 }
 
 @Composable
-fun CalendarPage(settings: StandBySettings) {
+fun CalendarPage() {
     val now = rememberStandByTime(showSeconds = false)
+    val theme = LocalStandByTheme.current
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -274,27 +346,29 @@ fun CalendarPage(settings: StandBySettings) {
     ) {
         Text(
             text = now.dayOfMonth.toString(),
-            color = settings.accentColor(),
+            color = theme.primary,
             fontSize = 164.sp,
             lineHeight = 164.sp,
             fontWeight = FontWeight.Thin,
+            fontFamily = FontFamily.Serif,
         )
         Column(Modifier.padding(start = 30.dp)) {
             Text(
                 now.format(DateTimeFormatter.ofPattern("EEEE", Locale.getDefault())).uppercase(),
-                color = settings.secondaryColor(),
+                color = theme.secondary,
                 fontSize = 18.sp,
                 letterSpacing = 3.sp,
             )
             Text(
                 now.format(DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())),
-                color = settings.accentColor(),
+                color = theme.primary,
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Light,
+                fontFamily = FontFamily.Serif,
             )
             Text(
                 now.year.toString(),
-                color = settings.secondaryColor(),
+                color = theme.secondary,
                 fontSize = 19.sp,
                 letterSpacing = 2.sp,
             )
@@ -314,22 +388,77 @@ private fun BatteryVisual(
     modifier: Modifier,
     compact: Boolean,
 ) {
+    val theme = LocalStandByTheme.current
     val progress by animateFloatAsState(
         targetValue = charging.batteryPercent / 100f,
         animationSpec = tween(500),
         label = "battery-progress",
     )
+    when (settings.batteryWidgetStyle) {
+        BatteryWidgetStyle.CIRCULAR -> CircularBatteryVisual(modifier, charging, progress, compact)
+        BatteryWidgetStyle.HORIZONTAL -> HorizontalBatteryVisual(modifier, charging, progress, compact)
+        BatteryWidgetStyle.PERCENTAGE -> Box(modifier, contentAlignment = Alignment.Center) {
+            Text(
+                text = "${charging.batteryPercent}%",
+                color = theme.primary,
+                fontSize = if (compact) 70.sp else 112.sp,
+                fontWeight = FontWeight.Thin,
+                style = TextStyle(fontFeatureSettings = "tnum"),
+            )
+        }
+        BatteryWidgetStyle.MINIMAL -> Column(
+            modifier = modifier,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Canvas(Modifier.size(if (compact) 112.dp else 158.dp, if (compact) 54.dp else 76.dp)) {
+                val stroke = 3.dp.toPx()
+                val terminalWidth = size.width * 0.055f
+                val bodyWidth = size.width - terminalWidth - stroke
+                drawRoundRect(
+                    color = theme.secondary,
+                    size = androidx.compose.ui.geometry.Size(bodyWidth, size.height),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(10.dp.toPx()),
+                    style = Stroke(stroke),
+                )
+                drawRoundRect(
+                    color = theme.accent,
+                    topLeft = androidx.compose.ui.geometry.Offset(stroke * 2f, stroke * 2f),
+                    size = androidx.compose.ui.geometry.Size(
+                        (bodyWidth - stroke * 4f) * progress,
+                        size.height - stroke * 4f,
+                    ),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(6.dp.toPx()),
+                )
+                drawRoundRect(
+                    color = theme.secondary,
+                    topLeft = androidx.compose.ui.geometry.Offset(bodyWidth + stroke, size.height * 0.32f),
+                    size = androidx.compose.ui.geometry.Size(terminalWidth, size.height * 0.36f),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.dp.toPx()),
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            Text("${charging.batteryPercent}%", color = theme.primary, fontSize = if (compact) 24.sp else 34.sp)
+        }
+    }
+}
+
+@Composable
+private fun CircularBatteryVisual(
+    modifier: Modifier,
+    charging: ChargingState,
+    progress: Float,
+    compact: Boolean,
+) {
+    val theme = LocalStandByTheme.current
     val ringSize = if (compact) 172.dp else 238.dp
     val numberSize = if (compact) 55.sp else 78.sp
     Box(modifier, contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(ringSize)) {
             val stroke = if (compact) 5.dp.toPx() else 7.dp.toPx()
-            drawCircle(
-                color = settings.secondaryColor().copy(alpha = 0.18f),
-                style = Stroke(stroke),
-            )
+            drawCircle(color = theme.separator, style = Stroke(stroke))
             drawArc(
-                color = settings.accentColor(),
+                color = theme.accent,
                 startAngle = -90f,
                 sweepAngle = progress * 360f,
                 useCenter = false,
@@ -339,7 +468,7 @@ private fun BatteryVisual(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "${charging.batteryPercent}%",
-                color = settings.accentColor(),
+                color = theme.primary,
                 fontSize = numberSize,
                 lineHeight = numberSize,
                 fontWeight = FontWeight.Thin,
@@ -347,7 +476,7 @@ private fun BatteryVisual(
             )
             Text(
                 text = chargingLabel(charging).uppercase(Locale.getDefault()),
-                color = settings.secondaryColor(),
+                color = theme.secondary,
                 fontSize = if (compact) 10.sp else 13.sp,
                 letterSpacing = 1.6.sp,
             )
@@ -356,9 +485,58 @@ private fun BatteryVisual(
 }
 
 @Composable
-private fun ChargingGlyph(settings: StandBySettings, charging: ChargingState, size: Int) {
+private fun HorizontalBatteryVisual(
+    modifier: Modifier,
+    charging: ChargingState,
+    progress: Float,
+    compact: Boolean,
+) {
+    val theme = LocalStandByTheme.current
+    Column(
+        modifier = modifier.padding(horizontal = if (compact) 32.dp else 100.dp),
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+                "${charging.batteryPercent}",
+                color = theme.primary,
+                fontSize = if (compact) 64.sp else 92.sp,
+                lineHeight = if (compact) 64.sp else 92.sp,
+                fontWeight = FontWeight.Light,
+                style = TextStyle(fontFeatureSettings = "tnum"),
+            )
+            Text("%", color = theme.secondary, fontSize = if (compact) 25.sp else 34.sp)
+        }
+        Spacer(Modifier.height(14.dp))
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(if (compact) 7.dp else 10.dp)
+                .clip(RoundedCornerShape(99.dp))
+                .background(theme.separator),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth(progress.coerceIn(0f, 1f))
+                    .height(if (compact) 7.dp else 10.dp)
+                    .background(theme.accent),
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        Text(
+            chargingLabel(charging).uppercase(Locale.getDefault()),
+            color = theme.secondary,
+            fontSize = if (compact) 11.sp else 14.sp,
+            letterSpacing = 1.8.sp,
+        )
+    }
+}
+
+@Composable
+private fun ChargingGlyph(charging: ChargingState, size: Int) {
+    val theme = LocalStandByTheme.current
     Canvas(Modifier.size(size.dp)) {
-        val color = settings.accentColor()
+        val color = theme.icon
         val stroke = 4.dp.toPx()
         drawCircle(color.copy(alpha = 0.22f), style = Stroke(stroke))
         if (charging.isCharging) {
