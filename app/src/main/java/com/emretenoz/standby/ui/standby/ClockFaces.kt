@@ -1,10 +1,7 @@
 package com.emretenoz.standby.ui.standby
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,7 +22,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -103,119 +98,48 @@ private fun AlarmCountdownCard(nextAlarm: NextAlarmState, modifier: Modifier = M
             it.seconds,
         )
     } ?: stringResource(R.string.no_alarm_set)
-    val cardShape = RoundedCornerShape(24.dp)
-
     Row(
         modifier = modifier
-            .clip(cardShape)
-            .background(theme.background)
-            .border(1.dp, theme.separator.copy(alpha = 0.8f), cardShape)
-            .semantics { contentDescription = countdownDescription }
-            .padding(horizontal = 9.dp, vertical = 8.dp),
+            .semantics { contentDescription = countdownDescription },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .size(34.dp)
-                .clip(RoundedCornerShape(11.dp))
-                .background(theme.accent.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Canvas(Modifier.size(21.dp)) {
-                val center = Offset(size.width / 2f, size.height / 2f)
-                val radius = size.minDimension * 0.42f
-                drawCircle(
-                    color = theme.icon,
-                    radius = radius,
-                    center = center,
-                    style = Stroke(1.7.dp.toPx()),
-                )
-                drawLine(
-                    color = theme.icon,
-                    start = center,
-                    end = Offset(center.x, center.y - radius * 0.58f),
-                    strokeWidth = 1.7.dp.toPx(),
-                    cap = StrokeCap.Round,
-                )
-                drawLine(
-                    color = theme.icon,
-                    start = center,
-                    end = Offset(center.x + radius * 0.48f, center.y),
-                    strokeWidth = 1.7.dp.toPx(),
-                    cap = StrokeCap.Round,
-                )
-                drawCircle(theme.icon, 1.7.dp.toPx(), center)
-            }
+        Canvas(Modifier.size(22.dp)) {
+            val center = Offset(size.width / 2f, size.height / 2f)
+            val radius = size.minDimension * 0.42f
+            drawCircle(
+                color = theme.icon,
+                radius = radius,
+                center = center,
+                style = Stroke(1.6.dp.toPx()),
+            )
+            drawLine(
+                color = theme.icon,
+                start = center,
+                end = Offset(center.x, center.y - radius * 0.58f),
+                strokeWidth = 1.6.dp.toPx(),
+                cap = StrokeCap.Round,
+            )
+            drawLine(
+                color = theme.icon,
+                start = center,
+                end = Offset(center.x + radius * 0.48f, center.y),
+                strokeWidth = 1.6.dp.toPx(),
+                cap = StrokeCap.Round,
+            )
+            drawCircle(theme.icon, 1.6.dp.toPx(), center)
         }
         Spacer(Modifier.width(8.dp))
-        if (remaining == null) {
-            Column {
-                Text(
-                    stringResource(R.string.alarm_countdown),
-                    color = theme.secondary,
-                    fontSize = 8.sp,
-                    letterSpacing = 0.9.sp,
-                )
-                Text(
-                    stringResource(R.string.no_alarm_set),
-                    color = theme.primary,
-                    fontSize = 13.sp,
-                )
-            }
-        } else {
-            Column {
-                Text(
-                    stringResource(R.string.alarm_countdown),
-                    color = theme.secondary,
-                    fontSize = 8.sp,
-                    letterSpacing = 0.9.sp,
-                )
-                Row(verticalAlignment = Alignment.Top) {
-                    CountdownUnit(remaining.hours, R.string.countdown_hours)
-                    CountdownSeparator()
-                    CountdownUnit(remaining.minutes, R.string.countdown_minutes)
-                    CountdownSeparator()
-                    CountdownUnit(remaining.seconds, R.string.countdown_seconds)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CountdownUnit(value: Long, @StringRes labelRes: Int) {
-    val theme = LocalStandByTheme.current
-    Column(
-        modifier = Modifier.width(31.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
         Text(
-            text = value.toString().padStart(2, '0'),
+            text = remaining?.let {
+                String.format(Locale.ROOT, "%02d:%02d:%02d", it.hours, it.minutes, it.seconds)
+            } ?: "--:--:--",
             color = theme.clockPrimary,
-            fontSize = 18.sp,
-            lineHeight = 19.sp,
+            fontSize = 20.sp,
+            lineHeight = 22.sp,
             fontWeight = FontWeight.Light,
             style = tabularStyle,
         )
-        Text(
-            text = stringResource(labelRes),
-            color = theme.secondary,
-            fontSize = 6.sp,
-            letterSpacing = 0.45.sp,
-        )
     }
-}
-
-@Composable
-private fun CountdownSeparator() {
-    val theme = LocalStandByTheme.current
-    Text(
-        text = ":",
-        modifier = Modifier.padding(top = 1.dp),
-        color = theme.secondary,
-        fontSize = 15.sp,
-        lineHeight = 18.sp,
-    )
 }
 
 internal data class AlarmCountdownParts(
