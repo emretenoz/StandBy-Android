@@ -16,6 +16,7 @@ All notable changes to StandBy are documented here.
 - MIT licensing for reuse and redistribution.
 - An opt-in current-weather widget powered by Open-Meteo and the selected world-clock city.
 - A compact live alarm countdown card on the lower-left of the second clock page.
+- A shorter, background-matched pill treatment for the alarm countdown card.
 
 ### Changed
 

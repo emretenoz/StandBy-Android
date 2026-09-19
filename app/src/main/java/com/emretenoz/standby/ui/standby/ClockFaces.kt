@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -81,7 +82,7 @@ fun FullClockPage(
             nextAlarm = nextAlarm,
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 24.dp, bottom = 22.dp),
+                .padding(start = 20.dp, bottom = 20.dp),
         )
     }
 }
@@ -102,61 +103,63 @@ private fun AlarmCountdownCard(nextAlarm: NextAlarmState, modifier: Modifier = M
             it.seconds,
         )
     } ?: stringResource(R.string.no_alarm_set)
+    val cardShape = RoundedCornerShape(24.dp)
 
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(theme.separator.copy(alpha = if (theme.isLight) 0.72f else 0.82f))
+            .clip(cardShape)
+            .background(theme.background)
+            .border(1.dp, theme.separator.copy(alpha = 0.8f), cardShape)
             .semantics { contentDescription = countdownDescription }
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 9.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(13.dp))
+                .size(34.dp)
+                .clip(RoundedCornerShape(11.dp))
                 .background(theme.accent.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center,
         ) {
-            Canvas(Modifier.size(25.dp)) {
+            Canvas(Modifier.size(21.dp)) {
                 val center = Offset(size.width / 2f, size.height / 2f)
                 val radius = size.minDimension * 0.42f
                 drawCircle(
                     color = theme.icon,
                     radius = radius,
                     center = center,
-                    style = Stroke(2.dp.toPx()),
+                    style = Stroke(1.7.dp.toPx()),
                 )
                 drawLine(
                     color = theme.icon,
                     start = center,
                     end = Offset(center.x, center.y - radius * 0.58f),
-                    strokeWidth = 2.dp.toPx(),
+                    strokeWidth = 1.7.dp.toPx(),
                     cap = StrokeCap.Round,
                 )
                 drawLine(
                     color = theme.icon,
                     start = center,
                     end = Offset(center.x + radius * 0.48f, center.y),
-                    strokeWidth = 2.dp.toPx(),
+                    strokeWidth = 1.7.dp.toPx(),
                     cap = StrokeCap.Round,
                 )
-                drawCircle(theme.icon, 2.dp.toPx(), center)
+                drawCircle(theme.icon, 1.7.dp.toPx(), center)
             }
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(8.dp))
         if (remaining == null) {
             Column {
                 Text(
                     stringResource(R.string.alarm_countdown),
                     color = theme.secondary,
-                    fontSize = 9.sp,
-                    letterSpacing = 1.2.sp,
+                    fontSize = 8.sp,
+                    letterSpacing = 0.9.sp,
                 )
                 Text(
                     stringResource(R.string.no_alarm_set),
                     color = theme.primary,
-                    fontSize = 15.sp,
+                    fontSize = 13.sp,
                 )
             }
         } else {
@@ -164,8 +167,8 @@ private fun AlarmCountdownCard(nextAlarm: NextAlarmState, modifier: Modifier = M
                 Text(
                     stringResource(R.string.alarm_countdown),
                     color = theme.secondary,
-                    fontSize = 9.sp,
-                    letterSpacing = 1.2.sp,
+                    fontSize = 8.sp,
+                    letterSpacing = 0.9.sp,
                 )
                 Row(verticalAlignment = Alignment.Top) {
                     CountdownUnit(remaining.hours, R.string.countdown_hours)
@@ -183,22 +186,22 @@ private fun AlarmCountdownCard(nextAlarm: NextAlarmState, modifier: Modifier = M
 private fun CountdownUnit(value: Long, @StringRes labelRes: Int) {
     val theme = LocalStandByTheme.current
     Column(
-        modifier = Modifier.width(42.dp),
+        modifier = Modifier.width(31.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = value.toString().padStart(2, '0'),
             color = theme.clockPrimary,
-            fontSize = 23.sp,
-            lineHeight = 24.sp,
+            fontSize = 18.sp,
+            lineHeight = 19.sp,
             fontWeight = FontWeight.Light,
             style = tabularStyle,
         )
         Text(
             text = stringResource(labelRes),
             color = theme.secondary,
-            fontSize = 7.sp,
-            letterSpacing = 0.8.sp,
+            fontSize = 6.sp,
+            letterSpacing = 0.45.sp,
         )
     }
 }
@@ -210,8 +213,8 @@ private fun CountdownSeparator() {
         text = ":",
         modifier = Modifier.padding(top = 1.dp),
         color = theme.secondary,
-        fontSize = 19.sp,
-        lineHeight = 22.sp,
+        fontSize = 15.sp,
+        lineHeight = 18.sp,
     )
 }
 

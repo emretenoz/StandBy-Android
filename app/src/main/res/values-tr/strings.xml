@@ -138,9 +138,9 @@
     <string name="no_alarm_set">Alarm ayarlanmamış</string>
     <string name="next_alarm">SONRAKİ ALARM</string>
     <string name="alarm_countdown">ALARMA KALAN</string>
-    <string name="countdown_hours">SAAT</string>
-    <string name="countdown_minutes">DAK</string>
-    <string name="countdown_seconds">SAN</string>
+    <string name="countdown_hours">SA</string>
+    <string name="countdown_minutes">DK</string>
+    <string name="countdown_seconds">SN</string>
     <string name="alarm_countdown_accessibility">Alarma %1$d saat, %2$d dakika, %3$d saniye kaldı</string>
     <string name="widget_weather">Hava durumu</string>
     <string name="weather_enabled">Çevrimiçi hava durumu</string>
