@@ -1,9 +1,7 @@
 package com.emretenoz.standby
 
 import android.content.ActivityNotFoundException
-import android.content.ComponentName
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
@@ -23,13 +21,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.emretenoz.standby.data.settings.ScreenTimeout
 import com.emretenoz.standby.data.settings.SettingsRepository
-import com.emretenoz.standby.data.media.MediaRepository
 import com.emretenoz.standby.data.weather.WeatherRepository
 import com.emretenoz.standby.system.ChargingObserver
 import com.emretenoz.standby.system.OrientationObserver
 import com.emretenoz.standby.system.NextAlarmObserver
 import com.emretenoz.standby.system.SystemStateRepository
-import com.emretenoz.standby.system.StandByNotificationListener
 import com.emretenoz.standby.ui.SettingsScreen
 import com.emretenoz.standby.ui.StandByViewModel
 import com.emretenoz.standby.ui.standby.StandByActions
@@ -38,8 +34,6 @@ import com.emretenoz.standby.ui.theme.StandByTheme
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
-    private lateinit var standByViewModel: StandByViewModel
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -52,18 +46,14 @@ class MainActivity : ComponentActivity() {
             nextAlarmObserver = NextAlarmObserver(applicationContext),
             scope = lifecycleScope,
         )
-        val mediaRepository = MediaRepository(applicationContext)
         val viewModel = ViewModelProvider(
             this,
             StandByViewModelFactory(
                 settingsRepository,
                 systemStateRepository,
                 WeatherRepository(),
-                mediaRepository,
             ),
         )[StandByViewModel::class.java]
-        standByViewModel = viewModel
-
         setContent {
             val state by viewModel.uiState.collectAsStateWithLifecycle()
             StandByTheme {
@@ -91,9 +81,6 @@ class MainActivity : ComponentActivity() {
                         onClockWidgetStyleChanged = viewModel::setClockWidgetStyle,
                         onDateWidgetStyleChanged = viewModel::setDateWidgetStyle,
                         onBatteryWidgetStyleChanged = viewModel::setBatteryWidgetStyle,
-                        onMediaPlayPause = viewModel::mediaPlayPause,
-                        onMediaNext = viewModel::mediaNext,
-                        onMediaPrevious = viewModel::mediaPrevious,
                     ),
                 ) {
                     SettingsScreen(
@@ -119,16 +106,10 @@ class MainActivity : ComponentActivity() {
                         onWeatherEnabledChanged = viewModel::setWeatherEnabled,
                         onPreview = viewModel::startPreview,
                         onOpenScreenSaverSettings = ::openScreenSaverSettings,
-                        onOpenMediaAccessSettings = ::openMediaAccessSettings,
                     )
                 }
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (::standByViewModel.isInitialized) standByViewModel.refreshMediaAccess()
     }
 
     private fun openScreenSaverSettings() {
@@ -140,27 +121,6 @@ class MainActivity : ComponentActivity() {
                 getString(R.string.screen_saver_settings_unavailable),
                 Toast.LENGTH_LONG,
             ).show()
-        }
-    }
-
-    private fun openMediaAccessSettings() {
-        val component = ComponentName(this, StandByNotificationListener::class.java)
-        val detailIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Intent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS).putExtra(
-                Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME,
-                component.flattenToString(),
-            )
-        } else {
-            Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-        }
-        try {
-            startActivity(detailIntent)
-        } catch (_: ActivityNotFoundException) {
-            try {
-                startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-            } catch (_: ActivityNotFoundException) {
-                Toast.makeText(this, R.string.media_settings_unavailable, Toast.LENGTH_LONG).show()
-            }
         }
     }
 
@@ -223,7 +183,6 @@ private class StandByViewModelFactory(
     private val settingsRepository: SettingsRepository,
     private val systemStateRepository: SystemStateRepository,
     private val weatherRepository: WeatherRepository,
-    private val mediaRepository: MediaRepository,
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -232,7 +191,6 @@ private class StandByViewModelFactory(
             settingsRepository,
             systemStateRepository,
             weatherRepository,
-            mediaRepository,
         ) as T
     }
 }

@@ -17,7 +17,7 @@ Custom themes expose separate background, primary, secondary, and accent colors.
 
 Settings include automatic activation, screen timeout behavior, keeping the screen awake, theme and background choices, clock appearance, manual Night Mode, and OLED burn-in protection. Theme choices, custom colors, typography, and widget styles are persisted with DataStore Preferences.
 
-The widget page follows the dual-stack model: swipe either half vertically to change its widget, or long-press a stack to open an editor directly over StandBy. Clock, date, battery, charging, world-clock, next-alarm, weather, and media widgets can be independently added, removed, and reordered. The next-alarm widget reads Android’s system alarm schedule without an additional permission. Weather is opt-in and uses the selected world-clock city; media controls are opt-in and use Android's notification-listener access to control the active media session. At least one widget is retained in each stack. Clock widgets provide Minimal, Bold, Editorial, and Compact styles; date widgets provide Numeric, Editorial, Calendar, and Minimal styles; battery widgets provide Circular, Horizontal, Percentage, and Minimal styles. Tap the style label beside a widget in the stack editor to cycle its presentation, or select it from Settings.
+The widget page follows the dual-stack model: swipe either half vertically to change its widget, or long-press a stack to open an editor directly over StandBy. Clock, date, battery, charging, world-clock, next-alarm, and weather widgets can be independently added, removed, and reordered. The next-alarm widget reads Android’s system alarm schedule without an additional permission. Weather is opt-in and uses the selected world-clock city. At least one widget is retained in each stack. Clock widgets provide Minimal, Bold, Editorial, and Compact styles; date widgets provide Numeric, Editorial, Calendar, and Minimal styles; battery widgets provide Circular, Horizontal, Percentage, and Minimal styles. Tap the style label beside a widget in the stack editor to cycle its presentation, or select it from Settings.
 
 Night Mode switches between the independently selected day and night themes. Crimson Night provides the dim red, true-black OLED treatment; other night themes keep their own palettes. Burn-in protection is enabled by default and moves the static content through a subtle three-pixel pattern once per minute without continuously animating it.
 
@@ -47,8 +47,8 @@ While the activity is already running and StandBy is active, it requests permiss
 app/src/main/java/com/emretenoz/standby/
 ├── MainActivity.kt                  Activity and window behavior
 ├── StandByDreamService.kt           System screen saver using shared StandBy UI
-├── data/                           Settings, weather, and media repositories
-├── system/                         Device observers and notification-listener service
+├── data/                           Settings and weather repositories
+├── system/                         Charging, orientation, and next-alarm observers
 └── ui/
     ├── SettingsScreen.kt            Categorized Material 3 settings
     ├── StandByViewModel.kt          Combined observable UI state
@@ -80,7 +80,7 @@ The same verification runs in GitHub Actions for pushes and pull requests. Relea
 
 ## Privacy
 
-StandBy does not request location, storage, calendar, or contacts permissions and includes no analytics or advertising SDK. Online weather is disabled by default; when enabled, the app sends the selected preset city's coordinates to [Open-Meteo](https://open-meteo.com/) to fetch current conditions. It never reads the device's location. Media controls require notification-listener access that the user must explicitly grant in Android Settings. The app uses that access only to find and control the active media session and does not store notification contents. All other charging, alarm, orientation, preference, and timezone processing remains on the device.
+StandBy does not request notification, location, storage, calendar, or contacts access and includes no analytics or advertising SDK. Online weather is disabled by default; when enabled, the app sends the selected preset city's coordinates to [Open-Meteo](https://open-meteo.com/) to fetch current conditions. It never reads the device's location. All other charging, alarm, orientation, preference, and timezone processing remains on the device.
 
 ## Project status
 

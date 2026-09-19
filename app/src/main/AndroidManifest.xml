@@ -31,15 +31,6 @@
             </intent-filter>
         </service>
 
-        <service
-            android:name=".system.StandByNotificationListener"
-            android:exported="true"
-            android:label="@string/media_access_service"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
-        </service>
     </application>
 
 </manifest>

@@ -153,19 +153,4 @@
     <string name="weather_rain">Yağmurlu</string>
     <string name="weather_snow">Karlı</string>
     <string name="weather_thunderstorm">Gök gürültülü</string>
-    <string name="widget_media">Medya</string>
-    <string name="media_access_service">StandBy medya erişimi</string>
-    <string name="media_access">Medya kontrolleri</string>
-    <string name="media_access_description">İsteğe bağlı erişim, StandBy’ın etkin medya oturumunu göstermesini ve kontrol etmesini sağlar. Bildirim içerikleri saklanmaz.</string>
-    <string name="media_access_granted">Erişim verildi</string>
-    <string name="media_access_not_granted">Erişim verilmedi</string>
-    <string name="open_media_access_settings">Bildirim erişimi ayarlarını aç</string>
-    <string name="media_settings_unavailable">Bildirim erişimi ayarları bu cihazda kullanılamıyor.</string>
-    <string name="media_access_required">Medya kontrolleri için Ayarlar’dan bildirim erişimi verin</string>
-    <string name="media_nothing_playing">Çalan medya yok</string>
-    <string name="media_unknown_title">Bilinmeyen parça</string>
-    <string name="media_previous">Önceki</string>
-    <string name="media_play">Oynat</string>
-    <string name="media_pause">Duraklat</string>
-    <string name="media_next">Sonraki</string>
 </resources>

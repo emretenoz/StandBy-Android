@@ -15,7 +15,6 @@ All notable changes to StandBy are documented here.
 - A permission-free next-alarm widget backed by Android’s system alarm schedule.
 - MIT licensing for reuse and redistribution.
 - An opt-in current-weather widget powered by Open-Meteo and the selected world-clock city.
-- An opt-in active-media widget with play/pause, previous, and next controls.
 
 ### Changed
 
@@ -28,3 +27,7 @@ All notable changes to StandBy are documented here.
 
 - Missing OEM screen-saver settings no longer crash the app.
 - Recoverable DataStore read failures fall back to safe defaults.
+
+### Removed
+
+- Notification-listener and media-control access from the GitHub build to avoid sensitive-access blocking during sideloading.

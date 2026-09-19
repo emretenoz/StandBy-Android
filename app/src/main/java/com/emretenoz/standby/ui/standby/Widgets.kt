@@ -23,7 +23,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -42,12 +41,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.annotation.StringRes
 import com.emretenoz.standby.data.settings.BatteryWidgetStyle
-import com.emretenoz.standby.data.media.MediaState
 import com.emretenoz.standby.data.settings.DateWidgetStyle
 import com.emretenoz.standby.data.settings.StandBySettings
 import com.emretenoz.standby.data.settings.StandByWidgetType
@@ -72,8 +69,6 @@ fun DualWidgetPage(
     charging: ChargingState,
     nextAlarm: NextAlarmState,
     weather: WeatherState,
-    media: MediaState,
-    actions: StandByActions,
     onEditRequest: (WidgetColumn) -> Unit,
 ) {
     Row(
@@ -88,8 +83,6 @@ fun DualWidgetPage(
             charging = charging,
             nextAlarm = nextAlarm,
             weather = weather,
-            media = media,
-            actions = actions,
             onEditRequest = onEditRequest,
             modifier = Modifier.weight(1f),
         )
@@ -100,8 +93,6 @@ fun DualWidgetPage(
             charging = charging,
             nextAlarm = nextAlarm,
             weather = weather,
-            media = media,
-            actions = actions,
             onEditRequest = onEditRequest,
             modifier = Modifier.weight(1f),
         )
@@ -117,8 +108,6 @@ private fun WidgetStack(
     charging: ChargingState,
     nextAlarm: NextAlarmState,
     weather: WeatherState,
-    media: MediaState,
-    actions: StandByActions,
     onEditRequest: (WidgetColumn) -> Unit,
     modifier: Modifier,
 ) {
@@ -143,7 +132,7 @@ private fun WidgetStack(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
         ) { page ->
-            WidgetContent(widgets[page], settings, charging, nextAlarm, weather, media, actions)
+            WidgetContent(widgets[page], settings, charging, nextAlarm, weather)
         }
         if (widgets.size > 1 && pagerState.isScrollInProgress) {
             Column(
@@ -176,8 +165,6 @@ fun WidgetContent(
     charging: ChargingState,
     nextAlarm: NextAlarmState,
     weather: WeatherState,
-    media: MediaState,
-    actions: StandByActions,
 ) {
     when (widget) {
         StandByWidgetType.CLOCK -> CompactClockWidget(settings)
@@ -187,7 +174,6 @@ fun WidgetContent(
         StandByWidgetType.WORLD_CLOCK -> CompactWorldClockWidget(settings)
         StandByWidgetType.NEXT_ALARM -> CompactNextAlarmWidget(settings, nextAlarm)
         StandByWidgetType.WEATHER -> CompactWeatherWidget(settings, weather)
-        StandByWidgetType.MEDIA -> CompactMediaWidget(media, actions)
     }
 }
 
@@ -499,94 +485,6 @@ private fun CompactWeatherWidget(settings: StandBySettings, weather: WeatherStat
                     fontSize = 9.sp,
                     letterSpacing = 1.2.sp,
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CompactMediaWidget(media: MediaState, actions: StandByActions) {
-    val theme = LocalStandByTheme.current
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 22.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            stringResource(R.string.widget_media).uppercase(Locale.getDefault()),
-            color = theme.secondary,
-            fontSize = 12.sp,
-            letterSpacing = 2.sp,
-        )
-        when {
-            !media.accessGranted -> Text(
-                stringResource(R.string.media_access_required),
-                modifier = Modifier.padding(top = 12.dp),
-                color = theme.primary,
-                fontSize = 17.sp,
-                textAlign = TextAlign.Center,
-            )
-            !media.hasSession -> Text(
-                stringResource(R.string.media_nothing_playing),
-                modifier = Modifier.padding(top = 12.dp),
-                color = theme.primary,
-                fontSize = 21.sp,
-            )
-            else -> {
-                val previousLabel = stringResource(R.string.media_previous)
-                val playPauseLabel = stringResource(
-                    if (media.isPlaying) R.string.media_pause else R.string.media_play
-                )
-                val nextLabel = stringResource(R.string.media_next)
-                Text(
-                    media.title ?: stringResource(R.string.media_unknown_title),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp),
-                    color = theme.primary,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                media.artist?.let {
-                    Text(
-                        it,
-                        modifier = Modifier.fillMaxWidth(),
-                        color = theme.secondary,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                Row(
-                    modifier = Modifier.padding(top = 6.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(
-                        onClick = { actions.onMediaPrevious?.invoke() },
-                        modifier = Modifier.semantics { contentDescription = previousLabel },
-                    ) {
-                        Text("‹", color = theme.icon, fontSize = 30.sp)
-                    }
-                    TextButton(
-                        onClick = { actions.onMediaPlayPause?.invoke() },
-                        modifier = Modifier.semantics { contentDescription = playPauseLabel },
-                    ) {
-                        Text(if (media.isPlaying) "Ⅱ" else "▶", color = theme.icon, fontSize = 24.sp)
-                    }
-                    TextButton(
-                        onClick = { actions.onMediaNext?.invoke() },
-                        modifier = Modifier.semantics { contentDescription = nextLabel },
-                    ) {
-                        Text("›", color = theme.icon, fontSize = 30.sp)
-                    }
-                }
             }
         }
     }

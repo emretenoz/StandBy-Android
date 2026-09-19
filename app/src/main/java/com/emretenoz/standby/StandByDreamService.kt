@@ -31,8 +31,6 @@ import com.emretenoz.standby.data.settings.StandByWidgetType
 import com.emretenoz.standby.data.settings.WidgetColumn
 import com.emretenoz.standby.data.settings.SettingsRepository
 import com.emretenoz.standby.data.settings.StandBySettings
-import com.emretenoz.standby.data.media.MediaRepository
-import com.emretenoz.standby.data.media.MediaState
 import com.emretenoz.standby.data.weather.WeatherRepository
 import com.emretenoz.standby.data.weather.WeatherState
 import com.emretenoz.standby.system.ChargingObserver
@@ -55,7 +53,6 @@ class StandByDreamService : DreamService(), LifecycleOwner, ViewModelStoreOwner,
     private val store = ViewModelStore()
     private val savedStateController = SavedStateRegistryController.create(this)
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private lateinit var mediaRepository: MediaRepository
 
     override val lifecycle: Lifecycle get() = lifecycleRegistry
     override val viewModelStore: ViewModelStore get() = store
@@ -78,7 +75,6 @@ class StandByDreamService : DreamService(), LifecycleOwner, ViewModelStoreOwner,
         val chargingObserver = ChargingObserver(applicationContext)
         val nextAlarmObserver = NextAlarmObserver(applicationContext)
         val weatherRepository = WeatherRepository()
-        mediaRepository = MediaRepository(applicationContext)
         val content = ComposeView(this).apply {
             setViewTreeLifecycleOwner(this@StandByDreamService)
             setViewTreeViewModelStoreOwner(this@StandByDreamService)
@@ -87,7 +83,6 @@ class StandByDreamService : DreamService(), LifecycleOwner, ViewModelStoreOwner,
                 val settings by settingsRepository.settings.collectAsState(StandBySettings())
                 val charging by chargingObserver.state.collectAsState(ChargingState())
                 val nextAlarm by nextAlarmObserver.state.collectAsState(NextAlarmState())
-                val media by mediaRepository.state.collectAsState(MediaState())
                 val weatherFlow = remember(settings.weatherEnabled, settings.worldClockZone) {
                     weatherRepository.observe(settings.weatherEnabled, settings.worldClockZone)
                 }
@@ -102,7 +97,6 @@ class StandByDreamService : DreamService(), LifecycleOwner, ViewModelStoreOwner,
                             charging = charging,
                             nextAlarm = nextAlarm,
                             weather = weather,
-                            media = media,
                             actions = StandByActions(
                                 onToggleWidget = { column: WidgetColumn, widget: StandByWidgetType ->
                                     serviceScope.launch { settingsRepository.toggleWidget(column, widget) }
@@ -151,9 +145,6 @@ class StandByDreamService : DreamService(), LifecycleOwner, ViewModelStoreOwner,
                                 onBatteryWidgetStyleChanged = { value ->
                                     serviceScope.launch { settingsRepository.setBatteryWidgetStyle(value) }
                                 },
-                                onMediaPlayPause = mediaRepository::playPause,
-                                onMediaNext = mediaRepository::skipToNext,
-                                onMediaPrevious = mediaRepository::skipToPrevious,
                             ),
                         )
                     } else {
@@ -190,7 +181,6 @@ class StandByDreamService : DreamService(), LifecycleOwner, ViewModelStoreOwner,
     override fun onDestroy() {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         store.clear()
-        if (::mediaRepository.isInitialized) mediaRepository.close()
         serviceScope.cancel()
         super.onDestroy()
     }

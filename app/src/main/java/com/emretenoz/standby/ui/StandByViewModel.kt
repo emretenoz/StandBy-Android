@@ -16,8 +16,6 @@ import com.emretenoz.standby.data.settings.StandBySettings
 import com.emretenoz.standby.data.settings.StandByWidgetType
 import com.emretenoz.standby.data.settings.WidgetColumn
 import com.emretenoz.standby.data.settings.WorldClockZone
-import com.emretenoz.standby.data.media.MediaRepository
-import com.emretenoz.standby.data.media.MediaState
 import com.emretenoz.standby.data.weather.WeatherRepository
 import com.emretenoz.standby.data.weather.WeatherState
 import com.emretenoz.standby.system.ChargingState
@@ -39,7 +37,6 @@ data class StandByUiState(
     val isLandscape: Boolean = false,
     val nextAlarm: NextAlarmState = NextAlarmState(),
     val weather: WeatherState = WeatherState(),
-    val media: MediaState = MediaState(),
     val isStandByActive: Boolean = false,
     val isPreviewMode: Boolean = false,
 )
@@ -55,7 +52,6 @@ class StandByViewModel(
     private val settingsRepository: SettingsRepository,
     systemStateRepository: SystemStateRepository,
     weatherRepository: WeatherRepository,
-    private val mediaRepository: MediaRepository,
 ) : ViewModel() {
     private val previewMode = MutableStateFlow(false)
 
@@ -65,27 +61,19 @@ class StandByViewModel(
         .distinctUntilChanged()
         .flatMapLatest { (enabled, location) -> weatherRepository.observe(enabled, location) }
 
-    private val runtimeState = combine(
+    private val baseState = combine(
+        settingsRepository.settings,
         systemStateRepository.charging,
         systemStateRepository.isLandscape,
         systemStateRepository.nextAlarm,
-        mediaRepository.state,
-    ) { charging, isLandscape, nextAlarm, media ->
-        RuntimeState(charging, isLandscape, nextAlarm, media)
-    }
-
-    private val baseState = combine(
-        settingsRepository.settings,
         weatherState,
-        runtimeState,
-    ) { settings, weather, runtime ->
+    ) { settings, charging, isLandscape, nextAlarm, weather ->
         StandByUiState(
             settings = settings,
-            charging = runtime.charging,
-            isLandscape = runtime.isLandscape,
-            nextAlarm = runtime.nextAlarm,
+            charging = charging,
+            isLandscape = isLandscape,
+            nextAlarm = nextAlarm,
             weather = weather,
-            media = runtime.media,
         )
     }
 
@@ -119,10 +107,6 @@ class StandByViewModel(
     fun setBatteryWidgetStyle(value: BatteryWidgetStyle) = update { setBatteryWidgetStyle(value) }
     fun setWorldClockZone(value: WorldClockZone) = update { setWorldClockZone(value) }
     fun setWeatherEnabled(value: Boolean) = update { setWeatherEnabled(value) }
-    fun refreshMediaAccess() = mediaRepository.refresh()
-    fun mediaPlayPause() = mediaRepository.playPause()
-    fun mediaNext() = mediaRepository.skipToNext()
-    fun mediaPrevious() = mediaRepository.skipToPrevious()
     fun setCustomColors(background: Long, primary: Long, secondary: Long, accent: Long) =
         update { setCustomColors(background, primary, secondary, accent) }
     fun setScreenTimeout(value: ScreenTimeout) = update { setScreenTimeout(value) }
@@ -136,16 +120,4 @@ class StandByViewModel(
     private fun update(block: suspend SettingsRepository.() -> Unit) {
         viewModelScope.launch { settingsRepository.block() }
     }
-
-    override fun onCleared() {
-        mediaRepository.close()
-        super.onCleared()
-    }
 }
-
-private data class RuntimeState(
-    val charging: ChargingState,
-    val isLandscape: Boolean,
-    val nextAlarm: NextAlarmState,
-    val media: MediaState,
-)

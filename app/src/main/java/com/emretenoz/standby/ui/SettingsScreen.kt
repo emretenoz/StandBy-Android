@@ -70,7 +70,6 @@ fun SettingsScreen(
     onWeatherEnabledChanged: (Boolean) -> Unit,
     onPreview: () -> Unit,
     onOpenScreenSaverSettings: () -> Unit,
-    onOpenMediaAccessSettings: () -> Unit,
 ) {
     val context = LocalContext.current
     Surface(color = MaterialTheme.colorScheme.background) {
@@ -171,22 +170,6 @@ fun SettingsScreen(
             SettingsSection(stringResource(R.string.section_system))
             TextButton(onClick = onOpenScreenSaverSettings) {
                 Text(stringResource(R.string.open_screen_saver_settings))
-            }
-            InfoRow(
-                stringResource(R.string.media_access),
-                stringResource(
-                    if (state.media.accessGranted) R.string.media_access_granted
-                    else R.string.media_access_not_granted
-                ),
-            )
-            Text(
-                stringResource(R.string.media_access_description),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 13.sp,
-                lineHeight = 18.sp,
-            )
-            TextButton(onClick = onOpenMediaAccessSettings) {
-                Text(stringResource(R.string.open_media_access_settings))
             }
 
             SettingsSection(stringResource(R.string.section_about))

@@ -44,7 +44,6 @@ import com.emretenoz.standby.data.settings.WidgetColumn
 import com.emretenoz.standby.system.ChargingState
 import com.emretenoz.standby.system.NextAlarmState
 import com.emretenoz.standby.data.weather.WeatherState
-import com.emretenoz.standby.data.media.MediaState
 import com.emretenoz.standby.ui.StandByUiState
 import kotlinx.coroutines.delay
 
@@ -60,7 +59,7 @@ fun StandByRoot(
         label = "standby-mode",
     ) { active ->
         if (active) {
-            StandByDisplay(state.settings, state.charging, state.nextAlarm, state.weather, state.media, actions)
+            StandByDisplay(state.settings, state.charging, state.nextAlarm, state.weather, actions)
         } else {
             settingsContent()
         }
@@ -74,7 +73,6 @@ fun StandByDisplay(
     charging: ChargingState,
     nextAlarm: NextAlarmState = NextAlarmState(),
     weather: WeatherState = WeatherState(),
-    media: MediaState = MediaState(),
     actions: StandByActions = StandByActions(),
 ) {
     StandByThemeProvider(settings) {
@@ -82,7 +80,7 @@ fun StandByDisplay(
             settings = settings,
             modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
-            StandByDisplayContent(settings, charging, nextAlarm, weather, media, actions)
+            StandByDisplayContent(settings, charging, nextAlarm, weather, actions)
         }
     }
 }
@@ -94,7 +92,6 @@ private fun StandByDisplayContent(
     charging: ChargingState,
     nextAlarm: NextAlarmState,
     weather: WeatherState,
-    media: MediaState,
     actions: StandByActions,
 ) {
     val pagerState = rememberPagerState(pageCount = { 4 })
@@ -119,7 +116,7 @@ private fun StandByDisplayContent(
                 userScrollEnabled = editingStack == null && !editingClock,
             ) { page ->
                 when (page) {
-                    0 -> DualWidgetPage(settings, charging, nextAlarm, weather, media, actions) {
+                    0 -> DualWidgetPage(settings, charging, nextAlarm, weather) {
                         editingStack = it
                     }
                     1 -> FullClockPage(settings) { editingClock = true }

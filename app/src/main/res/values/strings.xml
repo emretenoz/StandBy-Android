@@ -155,19 +155,4 @@
     <string name="weather_rain">Rain</string>
     <string name="weather_snow">Snow</string>
     <string name="weather_thunderstorm">Thunderstorm</string>
-    <string name="widget_media">Media</string>
-    <string name="media_access_service">StandBy media access</string>
-    <string name="media_access">Media controls</string>
-    <string name="media_access_description">Optional access lets StandBy show and control the active media session. Notification contents are not stored.</string>
-    <string name="media_access_granted">Access granted</string>
-    <string name="media_access_not_granted">Access not granted</string>
-    <string name="open_media_access_settings">Open notification access settings</string>
-    <string name="media_settings_unavailable">Notification access settings are unavailable on this device.</string>
-    <string name="media_access_required">Grant notification access in Settings to use media controls</string>
-    <string name="media_nothing_playing">Nothing is playing</string>
-    <string name="media_unknown_title">Unknown track</string>
-    <string name="media_previous">Previous</string>
-    <string name="media_play">Play</string>
-    <string name="media_pause">Pause</string>
-    <string name="media_next">Next</string>
 </resources>

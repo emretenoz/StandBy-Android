@@ -101,7 +101,6 @@ enum class StandByWidgetType(val label: String) {
     WORLD_CLOCK("World clock"),
     NEXT_ALARM("Next alarm"),
     WEATHER("Weather"),
-    MEDIA("Media"),
 }
 
 enum class WorldClockZone(

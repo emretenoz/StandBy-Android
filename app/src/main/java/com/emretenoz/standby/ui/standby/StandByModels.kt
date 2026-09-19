@@ -45,9 +45,6 @@ data class StandByActions(
     val onClockWidgetStyleChanged: ((ClockWidgetStyle) -> Unit)? = null,
     val onDateWidgetStyleChanged: ((DateWidgetStyle) -> Unit)? = null,
     val onBatteryWidgetStyleChanged: ((BatteryWidgetStyle) -> Unit)? = null,
-    val onMediaPlayPause: (() -> Unit)? = null,
-    val onMediaNext: (() -> Unit)? = null,
-    val onMediaPrevious: (() -> Unit)? = null,
 )
 
 @Composable
