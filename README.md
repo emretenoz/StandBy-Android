@@ -9,7 +9,7 @@ The four horizontally swipeable pages show:
 - An editorial calendar view
 - A visual battery and charging view
 
-Five clock faces are included: Digital, Digital Split, Analog, Solar / Orbit, and World Clock. Long-press the full-screen clock to open the live customization surface, where theme, face, clock color, seconds, 12/24-hour time, and date visibility can be previewed before the theme is saved.
+Five clock faces are included: Digital, Digital Split, Analog, Solar / Orbit, and World Clock. The secondary world-clock city can be selected from eleven timezone-safe presets. Long-press the full-screen clock to open the live customization surface, where theme, face, clock color, seconds, 12/24-hour time, and date visibility can be previewed before the theme is saved.
 
 The theme engine includes Classic, Midnight, Crimson Night, Sunset, Forest, Neon, Mono Light, and Custom themes. Every theme supplies centralized background, primary, secondary, accent, clock, analog-marker, separator, and icon tokens; screens and widgets consume these tokens instead of hard-coded colors. Day and Night Mode themes can be chosen independently. Mono Light is intentionally unavailable as a night theme, and Night Mode safely falls back to Crimson Night if an older preference requests it.
 
@@ -17,9 +17,11 @@ Custom themes expose separate background, primary, secondary, and accent colors.
 
 Settings include automatic activation, screen timeout behavior, keeping the screen awake, theme and background choices, clock appearance, manual Night Mode, and OLED burn-in protection. Theme choices, custom colors, typography, and widget styles are persisted with DataStore Preferences.
 
-The widget page follows the dual-stack model: swipe either half vertically to change its widget, or long-press a stack to open an editor directly over StandBy. Clock, date, battery, charging, and world-clock widgets can be independently added, removed, and reordered. At least one widget is retained in each stack. Clock widgets provide Minimal, Bold, Editorial, and Compact styles; date widgets provide Numeric, Editorial, Calendar, and Minimal styles; battery widgets provide Circular, Horizontal, Percentage, and Minimal styles. Tap the style label beside a widget in the stack editor to cycle its presentation, or select it from Settings.
+The widget page follows the dual-stack model: swipe either half vertically to change its widget, or long-press a stack to open an editor directly over StandBy. Clock, date, battery, charging, world-clock, next-alarm, weather, and media widgets can be independently added, removed, and reordered. The next-alarm widget reads Android’s system alarm schedule without an additional permission. Weather is opt-in and uses the selected world-clock city; media controls are opt-in and use Android's notification-listener access to control the active media session. At least one widget is retained in each stack. Clock widgets provide Minimal, Bold, Editorial, and Compact styles; date widgets provide Numeric, Editorial, Calendar, and Minimal styles; battery widgets provide Circular, Horizontal, Percentage, and Minimal styles. Tap the style label beside a widget in the stack editor to cycle its presentation, or select it from Settings.
 
-Night Mode keeps the OLED background fully black and changes ambient content to a dim deep red. Burn-in protection is enabled by default and moves the static content through a subtle three-pixel pattern once per minute without continuously animating it.
+Night Mode switches between the independently selected day and night themes. Crimson Night provides the dim red, true-black OLED treatment; other night themes keep their own palettes. Burn-in protection is enabled by default and moves the static content through a subtle three-pixel pattern once per minute without continuously animating it.
+
+The settings and customization surfaces are available in English and Turkish. Interactive ambient controls expose accessibility labels and use enlarged touch targets.
 
 ## Activation and Android limitations
 
@@ -42,11 +44,11 @@ While the activity is already running and StandBy is active, it requests permiss
 ## Project structure
 
 ```text
-app/src/main/java/com/example/standby/
+app/src/main/java/com/emretenoz/standby/
 ├── MainActivity.kt                  Activity and window behavior
 ├── StandByDreamService.kt           System screen saver using shared StandBy UI
-├── data/settings/                  DataStore model and repository
-├── system/                         Charging/orientation observers and state repository
+├── data/                           Settings, weather, and media repositories
+├── system/                         Device observers and notification-listener service
 └── ui/
     ├── SettingsScreen.kt            Categorized Material 3 settings
     ├── StandByViewModel.kt          Combined observable UI state
@@ -69,7 +71,17 @@ Requirements: Android Studio with JDK 17 and Android SDK 35 or newer.
 From a terminal:
 
 ```shell
-./gradlew assembleDebug
+./gradlew testDebugUnitTest lintDebug assembleDebug
 ```
 
-On Windows, use `gradlew.bat assembleDebug`.
+On Windows, use `gradlew.bat testDebugUnitTest lintDebug assembleDebug`.
+
+The same verification runs in GitHub Actions for pushes and pull requests. Release builds enable R8 optimization and resource shrinking; signing credentials must remain outside the repository.
+
+## Privacy
+
+StandBy does not request location, storage, calendar, or contacts permissions and includes no analytics or advertising SDK. Online weather is disabled by default; when enabled, the app sends the selected preset city's coordinates to [Open-Meteo](https://open-meteo.com/) to fetch current conditions. It never reads the device's location. Media controls require notification-listener access that the user must explicitly grant in Android Settings. The app uses that access only to find and control the active media session and does not store notification contents. All other charging, alarm, orientation, preference, and timezone processing remains on the device.
+
+## Project status
+
+The project is under active development. See [CHANGELOG.md](CHANGELOG.md) for unreleased changes and [CONTRIBUTING.md](CONTRIBUTING.md) for the verification and release checklist. The source is available under the [MIT License](LICENSE).

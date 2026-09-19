@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.standby"
+    namespace = "com.emretenoz.standby"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.standby"
+        applicationId = "com.emretenoz.standby"
         minSdk = 28
         targetSdk = 35
         versionCode = 1
@@ -33,6 +33,17 @@ android {
         jvmTarget = "17"
     }
 
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+        }
+    }
+
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
@@ -50,6 +61,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.foundation:foundation")
+    testImplementation("junit:junit:4.13.2")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
