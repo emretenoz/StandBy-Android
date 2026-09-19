@@ -119,7 +119,7 @@ private fun StandByDisplayContent(
                     0 -> DualWidgetPage(settings, charging, nextAlarm, weather) {
                         editingStack = it
                     }
-                    1 -> FullClockPage(settings) { editingClock = true }
+                    1 -> FullClockPage(settings, nextAlarm) { editingClock = true }
                     2 -> CalendarPage(nextAlarm)
                     else -> BatteryPage(settings, charging)
                 }

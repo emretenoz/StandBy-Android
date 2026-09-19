@@ -139,6 +139,11 @@
     <string name="city_sydney">Sydney</string>
     <string name="no_alarm_set">No alarm set</string>
     <string name="next_alarm">NEXT ALARM</string>
+    <string name="alarm_countdown">UNTIL ALARM</string>
+    <string name="countdown_hours">HR</string>
+    <string name="countdown_minutes">MIN</string>
+    <string name="countdown_seconds">SEC</string>
+    <string name="alarm_countdown_accessibility">%1$d hours, %2$d minutes, %3$d seconds until alarm</string>
     <string name="widget_weather">Weather</string>
     <string name="weather_enabled">Online weather</string>
     <string name="weather_enabled_description">Fetches current conditions for the selected world-clock city from Open-Meteo. Disabled by default.</string>
